@@ -1,0 +1,33 @@
+{
+  "name": "cognitiveimagescollection",
+  "version": "1.0.0",
+  "description": "Analyze images to extract tags and description for images",
+  "main": "deploy/server/analyze.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "buildserver": "tsc",
+    "server": "node deploy/output/app/src/server/analyze",
+    "go": "npm run buildserver & npm run server"
+  },
+  "keywords": [
+    "analyze",
+    "image",
+    "cognitive"
+  ],
+  "author": "Patrick Desjardins",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^7.0.31",
+    "@types/request": "0.0.44",
+    "@types/sharp": "^0.17.2",
+    "@types/stream-buffers": "^3.0.2",
+    "typescript": "^2.3.4"
+  },
+  "dependencies": {
+    "form-data": "^2.2.0",
+    "glob": "^7.1.2",
+    "request": "^2.81.0",
+    "sharp": "^0.18.1",
+    "stream-buffers": "^3.0.1"
+  }
+}
