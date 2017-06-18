@@ -2,56 +2,56 @@ import * as g from "glob";
 import * as path from "path";
 import * as sharp from "sharp";
 import * as fs from "fs";
-import * as querystring from "querystring";
-import * as http from "http";
 import * as request from "request";
-import * as formData from "form-data";
-
-import * as streamBuffers from "stream-buffers";
-import * as stream from "stream";
 
 import { endPointURL } from "../../../config";
 import { key1, localDirectory } from "../../../secret";
 import { IImage } from "./IImage";
 
+// ============== Configuration Constants =============
 const maxSize = 640;
 const directoryName = "metainfo";
 const maxRequestPerSecond = 10;
 const waitingPeriodInMs = 1500; // 10 requests per second
-
-let fullPathFiles: string[] = [];
-// 1- Get list of images
 const imagesDirectory = localDirectory;
 const pathImagesDirectory = path.join(imagesDirectory, "**/_*.+(jpg|JPG2)");
-console.log("Step 1 : Getting files " + pathImagesDirectory);
-const glob = new g.Glob(pathImagesDirectory, { ignore: "**/" + directoryName + "/**" } as g.IOptions, (err: Error, matches: string[]) => {
-    matches.forEach(file => {
-        console.log(file);
-        fullPathFiles.push(file);
+
+// =============== Global data variables ===============
+
+let numberOfImageProceeded = 0;
+
+function getImageToAnalyze(): Promise<string[]> {
+    const fullPathFiles: string[] = [];
+    const promise = new Promise<string[]>((resolve, reject) => {
+        const glob = new g.Glob(pathImagesDirectory, { ignore: "**/" + directoryName + "/**" } as g.IOptions, (err: Error, matches: string[]) => {
+            matches.forEach(file => {
+                console.log(file);
+                fullPathFiles.push(file);
+            });
+            resolve(fullPathFiles);
+        });
     });
-
-    resize(fullPathFiles);
-});
-
-const imagesReadyToBeAnalyzed: IImage[] = [];
-
-// 2 - Resize
-function resize(files: string[]): void {
-    console.log(`Resize ${files.length} files`);
-    for (let i = 0; i < fullPathFiles.length; i++) {
-        const thumb = getThumbnailPathAndFileName(fullPathFiles[i]);
-        if (fs.existsSync(thumb)) {
-            console.log("Thumbnail already exist, skip");
-            imagesReadyToBeAnalyzed.push({ thumbnailPath: thumb, originalFullPathImage: files[i] } as IImage);
-        } else {
-            resizeImage(fullPathFiles[i])
-                .then((image: IImage) => {
-                    imagesReadyToBeAnalyzed.push(image);
-                });
-        }
-    }
+    return promise;
 }
 
+function resize(fullPathFiles: string[]): Promise<IImage[]> {
+    const queue: IImage[] = [];
+    const promise = new Promise<IImage[]>((resolve, reject) => {
+        for (const imagePathFile of fullPathFiles) {
+            const thumb = getThumbnailPathAndFileName(imagePathFile);
+            if (fs.existsSync(thumb)) {
+                queue.push({ thumbnailPath: thumb, originalFullPathImage: imagePathFile } as IImage);
+            } else {
+                resizeImage(imagePathFile)
+                    .then((image: IImage) => {
+                        queue.push(image);
+                    });
+            }
+        }
+        resolve(queue);
+    });
+    return promise;
+}
 
 function resizeImage(imageToProceed: string): Promise<IImage> {
     const sharpFile = sharp(imageToProceed);
@@ -81,7 +81,6 @@ function resizeImage(imageToProceed: string): Promise<IImage> {
                     .toFile(thumbnailPath)
                     ;
                 promise.then((image: sharp.OutputInfo, ) => {
-                    console.log("resizeImage successful");
                     resolve();
                 }, (reason: any) => {
                     console.error(reason);
@@ -94,7 +93,7 @@ function resizeImage(imageToProceed: string): Promise<IImage> {
 function getMetainfoDirectoryPath(imageFullPath: string): string {
     const onlyPath = path.dirname(imageFullPath);
     const imageFilename = path.parse(imageFullPath);
-    const thumbnail = path.join(onlyPath, "/"+directoryName+"/");
+    const thumbnail = path.join(onlyPath, "/" + directoryName + "/");
     return thumbnail;
 }
 
@@ -106,44 +105,33 @@ function getThumbnailPathAndFileName(imageFullPath: string): string {
 }
 
 function getJsonImageinfoPathAndFileName(thumbnailPath: string): string {
-    var onlyPath = path.dirname(thumbnailPath);
-    var imageFilename = path.parse(thumbnailPath);
-    var info = path.join(onlyPath, imageFilename.name) + ".json";
+    const onlyPath = path.dirname(thumbnailPath);
+    const imageFilename = path.parse(thumbnailPath);
+    const info = path.join(onlyPath, imageFilename.name) + ".json";
     return info;
 }
 
-// 3- Azure Analyze 
-let batchTimeInMs: number = new Date().getTime();
-let numberOfImageProceeded = 0;
-function batchImagesAnalyse(): void {
-    console.log(`batchImagesAnalyse has ${imagesReadyToBeAnalyzed.length} in queue`);
-    setTimeout((imagesReadyToBeAnalyzed: IImage[]) => {
-        console.log(imagesReadyToBeAnalyzed);
-        while (imagesReadyToBeAnalyzed.length > 0 && numberOfImageProceeded < Math.min(imagesReadyToBeAnalyzed.length, maxRequestPerSecond)) {
-            const image = imagesReadyToBeAnalyzed.splice(imagesReadyToBeAnalyzed.length - 1, 1)[0];
+function batchImagesAnalyse(imagesReadyToBeAnalyzed: IImage[]): void {
+    setTimeout((images: IImage[]) => {
+        while (images.length > 0 && numberOfImageProceeded < Math.min(images.length, maxRequestPerSecond)) {
+            const image = images.splice(images.length - 1, 1)[0];
             if (analyzeRequest(image)) {
                 numberOfImageProceeded++;
             }
         }
-
         numberOfImageProceeded = 0;
-        batchImagesAnalyse();
-
+        batchImagesAnalyse(images);
     }, waitingPeriodInMs, imagesReadyToBeAnalyzed);
 }
-
-
-batchImagesAnalyse();
-
 
 function analyzeRequest(data: IImage): boolean {
     const pathToSave = getJsonImageinfoPathAndFileName(data.thumbnailPath);
     if (fs.existsSync(pathToSave)) {
-        console.log(`Skip analysis of ${data.thumbnailPath} because json already exist.`);
         return false;
     }
+
     const urlAzure = endPointURL + "/analyze?visualFeatures=Categories,Tags,Description,Faces,Color&details=Landmarks&language=en";
-    var req = request({
+    const req = request({
         url: urlAzure,
         encoding: "binary",
         method: "POST",
@@ -156,8 +144,6 @@ function analyzeRequest(data: IImage): boolean {
         if (error) {
             console.error(error);
         } else {
-            console.log(body);
-
             fs.writeFile(pathToSave, body, (err) => {
                 if (err) {
                     return console.error(err);
@@ -165,7 +151,20 @@ function analyzeRequest(data: IImage): boolean {
             });
         }
     });
-    var form = req.form();
-    form.append('file', fs.createReadStream(data.thumbnailPath));
+    const form = req.form();
+    form.append("file", fs.createReadStream(data.thumbnailPath));
     return true;
 }
+
+// 1- Get list of images
+console.log("Step 1 : Getting files " + pathImagesDirectory);
+getImageToAnalyze()
+    .then((fullPathFiles: string[]) => {
+        // 2- Resize (and save)
+        console.log("Step 2 : Resize " + fullPathFiles.length + " files");
+        return resize(fullPathFiles);
+    }).then((images: IImage[]) => {
+        // 3- Analyze (and save)
+        console.log("Step 3 : Analyze " + images.length + " files");
+        batchImagesAnalyse(images);
+    });
