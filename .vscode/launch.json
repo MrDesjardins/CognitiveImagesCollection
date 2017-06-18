@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Server Code",
+            "program": "${workspaceRoot}/deploy/output/app/src/server/analyze.js",
+            "sourceMaps": true
+        }
+    ]
+}
