@@ -8,8 +8,10 @@
     "build": "tsc",
     "analyze": "node deploy/output/app/src/server/analyze",
     "train": "node deploy/output/app/src/server/train",
+    "single": "node deploy/output/app/src/server/testSingleImageFromTrainingSet",
     "a": "npm run build & npm run analyze",
-    "t": "npm run build & npm run train"
+    "t": "npm run build & npm run train",
+    "s": "npm run build & npm run single"
   },
   "keywords": [
     "analyze",
