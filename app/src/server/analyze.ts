@@ -4,8 +4,8 @@ import * as sharp from "sharp";
 import * as fs from "fs";
 import * as request from "request";
 
-import { endPointURL } from "../../../config";
-import { key1, localDirectory } from "../../../secret";
+import { visionEndpointURL } from "../../../config";
+import { computerVisionKey, localDirectory } from "../../../secret";
 import { IImage } from "./IImage";
 
 // ============== Configuration Constants =============
@@ -24,7 +24,7 @@ function getImageToAnalyze(): Promise<string[]> {
     const fullPathFiles: string[] = [];
     const promise = new Promise<string[]>((resolve, reject) => {
         const glob = new g.Glob(pathImagesDirectory, { ignore: "**/" + directoryName + "/**" } as g.IOptions, (err: Error, matches: string[]) => {
-            matches.forEach(file => {
+            matches.forEach((file: string) => {
                 console.log(file);
                 fullPathFiles.push(file);
             });
@@ -119,8 +119,10 @@ function batchImagesAnalyse(imagesReadyToBeAnalyzed: IImage[]): void {
                 numberOfImageProceeded++;
             }
         }
-        numberOfImageProceeded = 0;
-        batchImagesAnalyse(images);
+        if (images.length !== 0) {
+            numberOfImageProceeded = 0;
+            batchImagesAnalyse(images);
+        }
     }, waitingPeriodInMs, imagesReadyToBeAnalyzed);
 }
 
@@ -130,7 +132,7 @@ function analyzeRequest(data: IImage): boolean {
         return false;
     }
 
-    const urlAzure = endPointURL + "/analyze?visualFeatures=Categories,Tags,Description,Faces,Color&details=Landmarks&language=en";
+    const urlAzure = visionEndpointURL + "/analyze?visualFeatures=Categories,Tags,Description,Faces,Color&details=Landmarks&language=en";
     const req = request({
         url: urlAzure,
         encoding: "binary",
@@ -138,7 +140,7 @@ function analyzeRequest(data: IImage): boolean {
         headers: {
             "Content-Type": "multipart/form-data",
             "Host": "westus.api.cognitive.microsoft.com",
-            "Ocp-Apim-Subscription-Key": key1
+            "Ocp-Apim-Subscription-Key": computerVisionKey
         }
     }, (error, response, body) => {
         if (error) {

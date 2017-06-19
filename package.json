@@ -5,9 +5,11 @@
   "main": "deploy/server/analyze.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "buildserver": "tsc",
-    "server": "node deploy/output/app/src/server/analyze",
-    "go": "npm run buildserver & npm run server"
+    "build": "tsc",
+    "analyze": "node deploy/output/app/src/server/analyze",
+    "train": "node deploy/output/app/src/server/train",
+    "a": "npm run build & npm run analyze",
+    "t": "npm run build & npm run train"
   },
   "keywords": [
     "analyze",

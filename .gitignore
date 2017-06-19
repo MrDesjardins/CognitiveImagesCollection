@@ -63,3 +63,4 @@ deploy/
 
 # API Secret keys
 secret.js
+trainimages/
