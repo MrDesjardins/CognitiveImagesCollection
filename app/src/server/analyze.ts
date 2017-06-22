@@ -14,7 +14,7 @@ const directoryName = "metainfo";
 const maxRequestPerSecond = 10;
 const waitingPeriodInMs = 1500; // 10 requests per second
 const imagesDirectory = localDirectory;
-const pathImagesDirectory = path.join(imagesDirectory, "**/_*.+(jpg|JPG2)");
+const pathImagesDirectory = path.join(imagesDirectory, "**/_*.+(jpg|JPG)");
 
 // =============== Global data variables ===============
 
@@ -171,7 +171,7 @@ function batchImagesFacesEmotionsAnalyze(imagesReadyToBeAnalyzed: IImage[], imag
             const image = images.splice(images.length - 1, 1)[0];
             analyzeFaceRequest(image)
                 .then((result: any) => {
-                    analyzeFaceDetectionRequest(image, imageGroupId, result);
+                    analyzeFaceDetectionRequest(image, imageGroupId, JSON.parse(result));
                 })
                 .catch(() => {
                     numberOfImageVisionProceeded--;
@@ -217,12 +217,13 @@ function analyzeFaceRequest(data: IImage): Promise<any> {
             if (error) {
                 console.error(error);
             } else {
-                console.log("analyzeFaceRequest > " + pathToSave + " : " + body);
+                // console.log("analyzeFaceRequest > " + pathToSave + " : " + body);
                 fs.writeFile(pathToSave, body, (err) => {
                     if (err) {
                         return console.error(err);
                     }
                 });
+                resolve(body);
             }
         }));
     });
@@ -242,6 +243,7 @@ function getJsonFaceDetectionInfoPathAndFileName(thumbnailPath: string): string 
 
 
 function analyzeFaceDetectionRequest(data: IImage, imageGroupId: string, detectPayload: any): Promise<any> {
+    console.log(detectPayload);
     const pathToSave = getJsonFaceDetectionInfoPathAndFileName(data.thumbnailPath);
     if (fs.existsSync(pathToSave)) {
         console.log("Dectection already exist for " + pathToSave);
