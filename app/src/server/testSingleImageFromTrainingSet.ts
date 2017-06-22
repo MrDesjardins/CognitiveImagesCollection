@@ -39,7 +39,6 @@ function detectPeopleFromImage(imageFullPath: string): Promise<any> {
 function identifyPeople(personGroupId: string, detectPayload: any): Promise<void> {
     const promise = new Promise<any>((resolve, reject) => {
         const arrayIds = (detectPayload as any[]).map((entry) => entry.faceId);
-        console.log(arrayIds);
         const urlAzure = faceEndpointURL + `/identify`;
         console.log(urlAzure);
         request({
@@ -62,6 +61,9 @@ function identifyPeople(personGroupId: string, detectPayload: any): Promise<void
                 reject(error);
             } else {
                 for (let i = 0; i < body.length; i++) {
+                    console.log("Body:");
+                    console.log(body[i]);
+                    console.log("Candidates:");
                     console.log(body[i].candidates);
                 }               
                 resolve(body);

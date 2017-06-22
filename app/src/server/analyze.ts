@@ -4,8 +4,8 @@ import * as sharp from "sharp";
 import * as fs from "fs";
 import * as request from "request";
 
-import { visionEndpointURL } from "../../../config";
-import { computerVisionKey, localDirectory } from "../../../secret";
+import { visionEndpointURL, imageGroupId, faceEndpointURL } from "../../../config";
+import { computerVisionKey, localDirectory, faceApiKey, personIdToDisplayName } from "../../../secret";
 import { IImage } from "./IImage";
 
 // ============== Configuration Constants =============
@@ -18,7 +18,7 @@ const pathImagesDirectory = path.join(imagesDirectory, "**/_*.+(jpg|JPG2)");
 
 // =============== Global data variables ===============
 
-let numberOfImageProceeded = 0;
+
 
 function getImageToAnalyze(): Promise<string[]> {
     const fullPathFiles: string[] = [];
@@ -35,20 +35,18 @@ function getImageToAnalyze(): Promise<string[]> {
 }
 
 function resize(fullPathFiles: string[]): Promise<IImage[]> {
-    const queue: IImage[] = [];
+    const listPromises: Promise<IImage>[] = [];
     const promise = new Promise<IImage[]>((resolve, reject) => {
         for (const imagePathFile of fullPathFiles) {
             const thumb = getThumbnailPathAndFileName(imagePathFile);
             if (fs.existsSync(thumb)) {
-                queue.push({ thumbnailPath: thumb, originalFullPathImage: imagePathFile } as IImage);
+                listPromises.push(Promise.resolve({ thumbnailPath: thumb, originalFullPathImage: imagePathFile } as IImage));
             } else {
-                resizeImage(imagePathFile)
-                    .then((image: IImage) => {
-                        queue.push(image);
-                    });
+                listPromises.push(resizeImage(imagePathFile));
             }
         }
-        resolve(queue);
+        Promise.all(listPromises)
+            .then((value: IImage[]) => resolve(value));
     });
     return promise;
 }
@@ -67,26 +65,22 @@ function resizeImage(imageToProceed: string): Promise<IImage> {
             }
             const newHeight = Math.round(actualHeight / ratio);
             const newWidth = Math.round(actualWidth / ratio);
-            const promiseToGetAnalyze = new Promise<IImage>((resolve, reject) => {
-                const thumbnailPath = getThumbnailPathAndFileName(imageToProceed);
-                // Create directory thumbnail first
-                const dir = getMetainfoDirectoryPath(imageToProceed);
-                if (!fs.existsSync(dir)) {
-                    fs.mkdirSync(dir);
-                }
+            const thumbnailPath = getThumbnailPathAndFileName(imageToProceed);
+            // Create directory thumbnail first
+            const dir = getMetainfoDirectoryPath(imageToProceed);
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir);
+            }
 
-                const promise = sharpFile
-                    .resize(newWidth, newHeight)
-                    .webp()
-                    .toFile(thumbnailPath)
-                    ;
-                promise.then((image: sharp.OutputInfo, ) => {
-                    resolve();
-                }, (reason: any) => {
-                    console.error(reason);
+            return sharpFile
+                .resize(newWidth, newHeight)
+                .webp()
+                .toFile(thumbnailPath)
+                .then((image: sharp.OutputInfo, ) => {
+                    return { thumbnailPath: thumbnailPath, originalFullPathImage: imageToProceed } as IImage;
                 });
-            });
-            return promiseToGetAnalyze;
+        }, (reason: any) => {
+            console.error(reason);
         });
 }
 
@@ -104,41 +98,53 @@ function getThumbnailPathAndFileName(imageFullPath: string): string {
     return thumbnail;
 }
 
-function getJsonImageinfoPathAndFileName(thumbnailPath: string): string {
+function getJsonVisionInfoPathAndFileName(thumbnailPath: string): string {
     const onlyPath = path.dirname(thumbnailPath);
     const imageFilename = path.parse(thumbnailPath);
-    const info = path.join(onlyPath, imageFilename.name) + ".json";
+    const info = path.join(onlyPath, imageFilename.name + "_vision") + ".json";
     return info;
 }
 
-function batchImagesAnalyse(imagesReadyToBeAnalyzed: IImage[]): void {
+let numberOfImageProceeded = 0;
+function batchImagesVisionAnalyzeWrapper(imagesReadyToBeAnalyzed: IImage[]): Promise<IImage[]> {
+    const copyImages = imagesReadyToBeAnalyzed.slice();
+    const promise = new Promise((resolve, reject) => {
+        batchImagesVisionAnalyze(imagesReadyToBeAnalyzed, () => {
+            resolve(copyImages);
+        });
+    });
+    return promise;
+}
+function batchImagesVisionAnalyze(imagesReadyToBeAnalyzed: IImage[], done: () => void): void {
     setTimeout((images: IImage[]) => {
         while (images.length > 0 && numberOfImageProceeded < Math.min(images.length, maxRequestPerSecond)) {
             const image = images.splice(images.length - 1, 1)[0];
-            if (analyzeRequest(image)) {
+            if (analyzeVisionRequest(image)) {
                 numberOfImageProceeded++;
             }
         }
         if (images.length !== 0) {
             numberOfImageProceeded = 0;
-            batchImagesAnalyse(images);
+            batchImagesVisionAnalyze(images, done);
+        } else {
+            done();
         }
     }, waitingPeriodInMs, imagesReadyToBeAnalyzed);
 }
 
-function analyzeRequest(data: IImage): boolean {
-    const pathToSave = getJsonImageinfoPathAndFileName(data.thumbnailPath);
+function analyzeVisionRequest(data: IImage): boolean {
+    const pathToSave = getJsonVisionInfoPathAndFileName(data.thumbnailPath);
     if (fs.existsSync(pathToSave)) {
         return false;
     }
 
     const urlAzure = visionEndpointURL + "/analyze?visualFeatures=Categories,Tags,Description,Faces,Color&details=Landmarks&language=en";
-    const req = request({
+    const req = fs.createReadStream(data.thumbnailPath).pipe(request({
         url: urlAzure,
         encoding: "binary",
         method: "POST",
         headers: {
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/octet-stream",
             "Host": "westus.api.cognitive.microsoft.com",
             "Ocp-Apim-Subscription-Key": computerVisionKey
         }
@@ -152,21 +158,162 @@ function analyzeRequest(data: IImage): boolean {
                 }
             });
         }
-    });
-    const form = req.form();
-    form.append("file", fs.createReadStream(data.thumbnailPath));
+    }));
+
     return true;
 }
 
-// 1- Get list of images
-console.log("Step 1 : Getting files " + pathImagesDirectory);
+
+let numberOfImageVisionProceeded = 0;
+function batchImagesFacesEmotionsAnalyze(imagesReadyToBeAnalyzed: IImage[], imageGroupId: string): void {
+    setTimeout((images: IImage[]) => {
+        while (images.length > 0 && numberOfImageVisionProceeded < Math.min(images.length, maxRequestPerSecond)) {
+            const image = images.splice(images.length - 1, 1)[0];
+            analyzeFaceRequest(image)
+                .then((result: any) => {
+                    analyzeFaceDetectionRequest(image, imageGroupId, result);
+                })
+                .catch(() => {
+                    numberOfImageVisionProceeded--;
+                    const dataFromFile = fs.readFileSync(getJsonFaceInfoPathAndFileName(image.thumbnailPath), "utf8");
+                    analyzeFaceDetectionRequest(image, imageGroupId, JSON.parse(dataFromFile));
+                });
+            numberOfImageVisionProceeded++;
+        }
+        if (images.length !== 0) {
+            numberOfImageVisionProceeded = 0;
+            batchImagesFacesEmotionsAnalyze(images, imageGroupId);
+        }
+    }, waitingPeriodInMs, imagesReadyToBeAnalyzed);
+}
+
+
+function getJsonFaceInfoPathAndFileName(thumbnailPath: string): string {
+    const onlyPath = path.dirname(thumbnailPath);
+    const imageFilename = path.parse(thumbnailPath);
+    const info = path.join(onlyPath, imageFilename.name + "_faces") + ".json";
+    return info;
+}
+
+
+function analyzeFaceRequest(data: IImage): Promise<any> {
+    const pathToSave = getJsonFaceInfoPathAndFileName(data.thumbnailPath);
+    if (fs.existsSync(pathToSave)) {
+        return Promise.reject("No Need to analyze, already analyzed");
+    }
+    const promise = new Promise<any>((resolve, reject) => {
+        const urlAzure = faceEndpointURL + `/detect?returnFaceId=true&returnFaceLandmarks=false&returnFaceAttributes=age,gender,smile,facialHair,glasses,emotion,hair,accessories`;
+        console.log(urlAzure);
+        const req = fs.createReadStream(data.thumbnailPath).pipe(request({
+            url: urlAzure,
+            method: "POST",
+            encoding: "binary",
+            headers: {
+                "Content-Type": "application/octet-stream",
+                "Host": "westus.api.cognitive.microsoft.com",
+                "Ocp-Apim-Subscription-Key": faceApiKey
+            }
+        }, (error, response, body) => {
+            if (error) {
+                console.error(error);
+            } else {
+                console.log("analyzeFaceRequest > " + pathToSave + " : " + body);
+                fs.writeFile(pathToSave, body, (err) => {
+                    if (err) {
+                        return console.error(err);
+                    }
+                });
+            }
+        }));
+    });
+
+    return promise;
+}
+
+
+
+
+function getJsonFaceDetectionInfoPathAndFileName(thumbnailPath: string): string {
+    const onlyPath = path.dirname(thumbnailPath);
+    const imageFilename = path.parse(thumbnailPath);
+    const info = path.join(onlyPath, imageFilename.name + "_facesdetection") + ".json";
+    return info;
+}
+
+
+function analyzeFaceDetectionRequest(data: IImage, imageGroupId: string, detectPayload: any): Promise<any> {
+    const pathToSave = getJsonFaceDetectionInfoPathAndFileName(data.thumbnailPath);
+    if (fs.existsSync(pathToSave)) {
+        console.log("Dectection already exist for " + pathToSave);
+        return Promise.reject("Face Detection Already Occurred. No need to analyze again. Skipping.");
+    }
+
+    const promise = new Promise<any>((resolve, reject) => {
+        const arrayIds = (detectPayload as any[]).map((entry) => entry.faceId);
+        const urlAzure = faceEndpointURL + `/identify`;
+        console.log(urlAzure);
+        request({
+            url: urlAzure,
+            method: "POST",
+            json: {
+                personGroupId: imageGroupId,
+                faceIds: arrayIds,
+                maxNumOfCandidatesReturned: 3,
+                confidenceThreshold: 0.5
+            },
+            headers: {
+                "Content-Type": "application/json",
+                "Host": "westus.api.cognitive.microsoft.com",
+                "Ocp-Apim-Subscription-Key": faceApiKey
+            }
+        }, (error, response, body) => {
+            if (error) {
+                console.error(error);
+                reject(error);
+            } else {
+                const dataToPersist: any[] = [];
+
+                for (let i = 0; i < body.length; i++) {
+                    let displayNameFromDetection = "Unknown";
+                    let personId = "-1";
+                    let faceId = body[i].faceId;
+                    if (body[i].candidates.length) {
+                        displayNameFromDetection = personIdToDisplayName[body[i].candidates[0].personId];
+                        personId = body[i].candidates[0].personId;
+                        faceId = body[i].faceId;
+                    }
+                    dataToPersist[i] = { displayName: displayNameFromDetection, personId: personId, faceId: faceId };
+                }
+                if (error) {
+                    console.error(error);
+                } else {
+                    const toSaveString = JSON.stringify(dataToPersist);
+                    fs.writeFile(pathToSave, toSaveString, (err) => {
+                        if (err) {
+                            return console.error(err);
+                        }
+                    });
+                }
+                resolve(body);
+            }
+        });
+    });
+    return promise;
+}
+
+
+
+console.log("Step 1 : Getting images to analyze " + pathImagesDirectory);
 getImageToAnalyze()
     .then((fullPathFiles: string[]) => {
-        // 2- Resize (and save)
         console.log("Step 2 : Resize " + fullPathFiles.length + " files");
         return resize(fullPathFiles);
-    }).then((images: IImage[]) => {
-        // 3- Analyze (and save)
-        console.log("Step 3 : Analyze " + images.length + " files");
-        batchImagesAnalyse(images);
+    })
+    .then((images: IImage[]) => {
+        console.log("Step 3 : Vision Analyze " + images.length + " files");
+        return batchImagesVisionAnalyzeWrapper(images);
+    })
+    .then((images: IImage[]) => {
+        console.log("Step 4 : Faces Analyze + Detection " + images.length + " files");
+        return batchImagesFacesEmotionsAnalyze(images, imageGroupId);
     });
