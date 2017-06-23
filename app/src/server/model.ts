@@ -111,6 +111,9 @@ export interface IFaceDetection {
 
 export interface IFullMeta extends IVisionModel {
     people: IFaceWithDetection[]
+    year: number;
+    fullDate: string;
+    manualTags: string[];
 }
 
 export interface IFaceWithDetection extends IFace {

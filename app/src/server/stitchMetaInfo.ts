@@ -50,11 +50,22 @@ const glob = new g.Glob(pathImagesDirectory, {} as g.IOptions, (err: Error, matc
             }
             fullMeta.people.push(newFace);
         });
-        fs.writeFile(savedFinalFile, JSON.stringify(mainObject), (err) => {
+
+        const regexPattern = /([0-9]{4})\/([0-9]{4}\-[0-9]{2}\-[0-9]{2})\-([^\/]*)/g;
+        const regexMatches = regexPattern.exec(mainFile);
+        const year = regexMatches[1];
+        const yearMonthDay = regexMatches[2];
+        const tinyDescription = regexMatches[3];
+        const extractedTagsFromTinyDescription = tinyDescription.replace(/([A-Z])/g, " $1").split(" ").filter((e: string) => e !== "");
+        fullMeta.year = parseInt(year, 10);
+        fullMeta.fullDate = yearMonthDay;
+        fullMeta.manualTags = extractedTagsFromTinyDescription;
+
+        fs.writeFile(savedFinalFile, JSON.stringify(fullMeta), (err) => {
             if (err) {
                 return console.error(err);
             }
-            // Delete other JSON since we merged everything
+            // Delete other JSON files since we merged everything
             fs.unlink(mainFile, (errorDelete) => {
                 if (err) {
                     return console.error(errorDelete);
