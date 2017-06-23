@@ -7,6 +7,7 @@ import * as request from "request";
 import { visionEndpointURL, imageGroupId, faceEndpointURL } from "../../../config";
 import { computerVisionKey, localDirectory, faceApiKey, personIdToDisplayName } from "../../../secret";
 import { IImage } from "./IImage";
+import { IFace, IFaceDetection } from "./model";
 
 // ============== Configuration Constants =============
 const maxSize = 640;
@@ -170,13 +171,13 @@ function batchImagesFacesEmotionsAnalyze(imagesReadyToBeAnalyzed: IImage[], imag
         while (images.length > 0 && numberOfImageVisionProceeded < Math.min(images.length, maxRequestPerSecond)) {
             const image = images.splice(images.length - 1, 1)[0];
             analyzeFaceRequest(image)
-                .then((result: any) => {
-                    analyzeFaceDetectionRequest(image, imageGroupId, JSON.parse(result));
+                .then((result: IFace[]) => {
+                    analyzeFaceDetectionRequest(image, imageGroupId, result);
                 })
                 .catch(() => {
                     numberOfImageVisionProceeded--;
                     const dataFromFile = fs.readFileSync(getJsonFaceInfoPathAndFileName(image.thumbnailPath), "utf8");
-                    analyzeFaceDetectionRequest(image, imageGroupId, JSON.parse(dataFromFile));
+                    analyzeFaceDetectionRequest(image, imageGroupId, JSON.parse(dataFromFile) as IFace[]);
                 });
             numberOfImageVisionProceeded++;
         }
@@ -187,7 +188,6 @@ function batchImagesFacesEmotionsAnalyze(imagesReadyToBeAnalyzed: IImage[], imag
     }, waitingPeriodInMs, imagesReadyToBeAnalyzed);
 }
 
-
 function getJsonFaceInfoPathAndFileName(thumbnailPath: string): string {
     const onlyPath = path.dirname(thumbnailPath);
     const imageFilename = path.parse(thumbnailPath);
@@ -195,13 +195,12 @@ function getJsonFaceInfoPathAndFileName(thumbnailPath: string): string {
     return info;
 }
 
-
-function analyzeFaceRequest(data: IImage): Promise<any> {
+function analyzeFaceRequest(data: IImage): Promise<IFace[]> {
     const pathToSave = getJsonFaceInfoPathAndFileName(data.thumbnailPath);
     if (fs.existsSync(pathToSave)) {
         return Promise.reject("No Need to analyze, already analyzed");
     }
-    const promise = new Promise<any>((resolve, reject) => {
+    const promise = new Promise<IFace[]>((resolve, reject) => {
         const urlAzure = faceEndpointURL + `/detect?returnFaceId=true&returnFaceLandmarks=false&returnFaceAttributes=age,gender,smile,facialHair,glasses,emotion,hair,accessories`;
         console.log(urlAzure);
         const req = fs.createReadStream(data.thumbnailPath).pipe(request({
@@ -223,7 +222,7 @@ function analyzeFaceRequest(data: IImage): Promise<any> {
                         return console.error(err);
                     }
                 });
-                resolve(body);
+                resolve(JSON.parse(body) as IFace[]);
             }
         }));
     });
@@ -242,7 +241,7 @@ function getJsonFaceDetectionInfoPathAndFileName(thumbnailPath: string): string 
 }
 
 
-function analyzeFaceDetectionRequest(data: IImage, imageGroupId: string, detectPayload: any): Promise<any> {
+function analyzeFaceDetectionRequest(data: IImage, imageGroupId: string, detectPayload: IFace[]): Promise<IFaceDetection> {
     console.log(detectPayload);
     const pathToSave = getJsonFaceDetectionInfoPathAndFileName(data.thumbnailPath);
     if (fs.existsSync(pathToSave)) {
@@ -250,8 +249,8 @@ function analyzeFaceDetectionRequest(data: IImage, imageGroupId: string, detectP
         return Promise.reject("Face Detection Already Occurred. No need to analyze again. Skipping.");
     }
 
-    const promise = new Promise<any>((resolve, reject) => {
-        const arrayIds = (detectPayload as any[]).map((entry) => entry.faceId);
+    const promise = new Promise<IFaceDetection>((resolve, reject) => {
+        const arrayIds = detectPayload.map((entry) => entry.faceId);
         const urlAzure = faceEndpointURL + `/identify`;
         console.log(urlAzure);
         request({
@@ -273,7 +272,7 @@ function analyzeFaceDetectionRequest(data: IImage, imageGroupId: string, detectP
                 console.error(error);
                 reject(error);
             } else {
-                const dataToPersist: any[] = [];
+                const dataToPersist: IFaceDetection[] = [];
 
                 for (let i = 0; i < body.length; i++) {
                     let displayNameFromDetection = "Unknown";

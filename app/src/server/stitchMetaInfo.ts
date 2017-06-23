@@ -7,6 +7,7 @@ import * as request from "request";
 import { visionEndpointURL, imageGroupId, faceEndpointURL } from "../../../config";
 import { computerVisionKey, localDirectory, faceApiKey, personIdToDisplayName } from "../../../secret";
 import { IImage } from "./IImage";
+import { IVisionModel, IFace, IFaceDetection, IFullMeta, IFaceWithDetection } from "./model";
 
 
 // ============== Configuration Constants =============
@@ -27,35 +28,51 @@ const glob = new g.Glob(pathImagesDirectory, {} as g.IOptions, (err: Error, matc
         const detectionFile = file.replace("_vision", "_facesdetection");
         const savedFinalFile = file.replace("_vision", "_fullmeta");
 
-        // console.log("Main :" + mainFile);
-        // console.log("Faces :" + facesFile);
-        // console.log("Detect :" + detectionFile);
-
-
         const dataFromMainFile = fs.readFileSync(mainFile, "utf8");
         const dataFromFacesFile = fs.readFileSync(facesFile, "utf8");
         const dataFromDetectFile = fs.readFileSync(detectionFile, "utf8");
 
-        const mainObject = JSON.parse(dataFromMainFile);
-        const facesObject = JSON.parse(dataFromFacesFile);
-        const detectObject = JSON.parse(dataFromDetectFile);
-
-        facesObject.forEach((face: any) => {
+        const mainObject = JSON.parse(dataFromMainFile) as IVisionModel;
+        const facesObject = JSON.parse(dataFromFacesFile) as IFace[];
+        const detectObject = JSON.parse(dataFromDetectFile) as IFaceDetection[];
+        const fullMeta = mainObject as IFullMeta;
+        fullMeta.people = [];
+        facesObject.forEach((face: IFace) => {
             const faceId = face.faceId;
-            const personObject = detectObject.find((faceLooking: any) => faceLooking.faceId === faceId);
+            const personObject = detectObject.find((faceLooking: IFaceDetection) => faceLooking.faceId === faceId);
+            const newFace = face as IFaceWithDetection;
             if (personObject) {
-                face.displayName = personObject.displayName;
-                face.personId = personObject.personId;
+                newFace.displayName = personObject.displayName;
+                newFace.personId = personObject.personId;
             } else {
-                face.displayName = "Unknown";
-                face.personId = "";
+                newFace.displayName = "Unknown";
+                newFace.personId = "";
             }
+            fullMeta.people.push(newFace);
         });
-        mainObject.peoples = facesObject;
         fs.writeFile(savedFinalFile, JSON.stringify(mainObject), (err) => {
             if (err) {
                 return console.error(err);
             }
+            // Delete other JSON since we merged everything
+            fs.unlink(mainFile, (errorDelete) => {
+                if (err) {
+                    return console.error(errorDelete);
+                }
+                console.log("Deleted " + mainFile);
+            });
+            fs.unlink(facesFile, (errorDelete) => {
+                if (err) {
+                    return console.error(errorDelete);
+                }
+                console.log("Deleted " + facesFile);
+            });
+            fs.unlink(detectionFile, (errorDelete) => {
+                if (err) {
+                    return console.error(errorDelete);
+                }
+                console.log("Deleted " + detectionFile);
+            });
         });
     });
 });
