@@ -9,9 +9,11 @@
     "analyze": "node deploy/output/app/src/server/analyze",
     "train": "node deploy/output/app/src/server/train",
     "single": "node deploy/output/app/src/server/testSingleImageFromTrainingSet",
+    "stitch": "node deploy/output/app/src/server/stitchMetaInfo",
     "a": "npm run build & npm run analyze",
     "t": "npm run build & npm run train",
-    "s": "npm run build & npm run single"
+    "s": "npm run build & npm run single",
+    "x": "npm run build & npm run stitch"
   },
   "keywords": [
     "analyze",
