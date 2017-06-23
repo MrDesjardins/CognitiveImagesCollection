@@ -23,6 +23,7 @@
   "author": "Patrick Desjardins",
   "license": "MIT",
   "devDependencies": {
+    "@types/glob": "^5.0.30",
     "@types/node": "^7.0.31",
     "@types/request": "0.0.44",
     "@types/sharp": "^0.17.2",

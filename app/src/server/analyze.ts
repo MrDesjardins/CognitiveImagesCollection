@@ -22,21 +22,15 @@ const pathImagesDirectory = path.join(imagesDirectory, "**/_*.+(jpg|JPG)");
 
 
 function getImageToAnalyze(): Promise<string[]> {
-    const fullPathFiles: string[] = [];
-    const promise = new Promise<string[]>((resolve, reject) => {
+    return new Promise<string[]>((resolve, reject) => {
         const glob = new g.Glob(pathImagesDirectory, { ignore: "**/" + directoryName + "/**" } as g.IOptions, (err: Error, matches: string[]) => {
-            matches.forEach((file: string) => {
-                console.log(file);
-                fullPathFiles.push(file);
-            });
-            resolve(fullPathFiles);
+            resolve(matches);
         });
     });
-    return promise;
 }
 
 function resize(fullPathFiles: string[]): Promise<IImage[]> {
-    const listPromises: Promise<IImage>[] = [];
+    const listPromises: Array<Promise<IImage>> = [];
     const promise = new Promise<IImage[]>((resolve, reject) => {
         for (const imagePathFile of fullPathFiles) {
             const thumb = getThumbnailPathAndFileName(imagePathFile);
