@@ -3,6 +3,7 @@ import * as path from "path";
 import * as sharp from "sharp";
 import * as fs from "fs";
 import * as request from "request";
+import * as moment from "moment";
 
 import { visionEndpointURL, imageGroupId, faceEndpointURL } from "../../../config";
 import { computerVisionKey, localDirectory, faceApiKey, personIdToDisplayName } from "../../../secret";
@@ -14,9 +15,6 @@ import { IVisionModel, IFace, IFaceDetection, IFullMeta, IFaceWithDetection } fr
 const directoryName = "metainfo";
 const imagesDirectory = localDirectory;
 const pathImagesDirectory = path.join(imagesDirectory, "**/" + directoryName + "/*_vision.json");
-
-// =============== Global data variables ===============
-
 
 console.log(pathImagesDirectory);
 
@@ -58,7 +56,7 @@ const glob = new g.Glob(pathImagesDirectory, {} as g.IOptions, (err: Error, matc
         const tinyDescription = regexMatches[3];
         const extractedTagsFromTinyDescription = tinyDescription.replace(/([A-Z])/g, " $1").split(" ").filter((e: string) => e !== "");
         fullMeta.year = parseInt(year, 10);
-        fullMeta.fullDate = yearMonthDay;
+        fullMeta.fullDate = moment(yearMonthDay).toDate();
         fullMeta.manualTags = extractedTagsFromTinyDescription;
 
         fs.writeFile(savedFinalFile, JSON.stringify(fullMeta), (err) => {
@@ -66,24 +64,24 @@ const glob = new g.Glob(pathImagesDirectory, {} as g.IOptions, (err: Error, matc
                 return console.error(err);
             }
             // Delete other JSON files since we merged everything
-            fs.unlink(mainFile, (errorDelete) => {
-                if (err) {
-                    return console.error(errorDelete);
-                }
-                console.log("Deleted " + mainFile);
-            });
-            fs.unlink(facesFile, (errorDelete) => {
-                if (err) {
-                    return console.error(errorDelete);
-                }
-                console.log("Deleted " + facesFile);
-            });
-            fs.unlink(detectionFile, (errorDelete) => {
-                if (err) {
-                    return console.error(errorDelete);
-                }
-                console.log("Deleted " + detectionFile);
-            });
+            // fs.unlink(mainFile, (errorDelete) => {
+            //     if (err) {
+            //         return console.error(errorDelete);
+            //     }
+            //     console.log("Deleted " + mainFile);
+            // });
+            // fs.unlink(facesFile, (errorDelete) => {
+            //     if (err) {
+            //         return console.error(errorDelete);
+            //     }
+            //     console.log("Deleted " + facesFile);
+            // });
+            // fs.unlink(detectionFile, (errorDelete) => {
+            //     if (err) {
+            //         return console.error(errorDelete);
+            //     }
+            //     console.log("Deleted " + detectionFile);
+            // });
         });
     });
 });

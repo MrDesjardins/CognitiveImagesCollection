@@ -10,10 +10,12 @@
     "train": "node deploy/output/app/src/server/train",
     "single": "node deploy/output/app/src/server/testSingleImageFromTrainingSet",
     "stitch": "node deploy/output/app/src/server/stitchMetaInfo",
+    "db": "node deploy/output/app/src/server/saveInDb",
     "a": "npm run build & npm run analyze",
     "t": "npm run build & npm run train",
     "s": "npm run build & npm run single",
-    "x": "npm run build & npm run stitch"
+    "x": "npm run build & npm run stitch",
+    "sdb": "npm run build & npm run db"
   },
   "keywords": [
     "analyze",
@@ -24,10 +26,13 @@
   "license": "MIT",
   "devDependencies": {
     "@types/glob": "^5.0.30",
+    "@types/moment": "^2.13.0",
+    "@types/mongodb": "^2.2.6",
     "@types/node": "^7.0.31",
     "@types/request": "0.0.44",
     "@types/sharp": "^0.17.2",
     "@types/stream-buffers": "^3.0.2",
+    "mongodb": "^2.2.29",
     "typescript": "^2.3.4"
   },
   "dependencies": {

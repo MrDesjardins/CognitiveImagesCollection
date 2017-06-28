@@ -26,12 +26,14 @@ export const personIdToDisplayName = {
 };
 
 ```
+
 To get your **Azure keys** use this link : https://portal.azure.com/#create/Microsoft.CognitiveServices
 
 ## Scan Files
 A local directory is defined in the secret file (*localDirectory*). This will scan all jpg or JPG file and go recursively into sub directory to have a list of file to request.
 
 A second configuration called train directory (*trainDirectory*) is used to train the system to recognize some people. This directory needs to have sub directories with the full name of the people you want to identify. These sub-folders will have face pictures only. This is how it should look:
+
 ```
 c:\your\directory\to\train\
 c:\your\directory\to\train\First Last 1\
@@ -48,11 +50,22 @@ The analyze part contains calling the Vision Api to get tags, description and ot
 
 ## Stitch
 Stitching is the last part which combine the information from all the JSON file as well as taking information from the folder. My local folders are containing information about the date and about small details on what happen. For example:
+
 ```
 c:\folder\where\all\pictures\2017\2017-12-25-Christmas\
 c:\folder\where\all\pictures\2017\2018-01-01-NewEveMorning\
-````
+```
+
 This mean I can extract the date and an accurate tiny description.
+
+## DB
+Every file is stored in MongoDb. The script saveInDb.ts insert all metadata stiched files in MongoDb. You need to start an instance and connect to it.
+
+```
+mongod --dbpath=.\data
+```
+
+This will allow us to have the website to be backed up with a faster way to query.
 
 # Pre-requisite
 
@@ -63,7 +76,8 @@ This mean I can extract the date and an accurate tiny description.
 1. npm run build
 2. npm run train
 3. npm run analyze
-3. npm run stitch
+4. npm run stitch
+5. npm run db
 
 # High Level Tasks List
 
@@ -73,8 +87,8 @@ This mean I can extract the date and an accurate tiny description.
 4. ~~Save a temporary file on disk for the thumbnail and the response. Thumbnail will be used for the website. Response in the search tool later.~~
 5. ~~Train Face from a subset of images to have future identification~~
 6. ~~Request Face Api to get emotion and to tag people name (create a second JSON file)~~
-7. Enhance result with local information (folder directory has name and full date)
-8. Store information
+7. ~~Enhance result with local information (folder directory has name and full date)~~
+8. ~~Store information~~
 9. Create website to query data
 10. Display result
 11. Remove hard-coded value from secret.js and use the [Person - List Persons in a Person Group](https://westus.dev.cognitive.microsoft.com/docs/services/563879b61984550e40cbbe8d/operations/563879b61984550f30395241/console) API to create the map between GUID and display name.
