@@ -113,6 +113,7 @@ export interface IFullMeta extends IVisionModel {
     people: IFaceWithDetection[]
     year: number;
     fullDate: Date;
+    fullPathPictureThumbnail: string;
     manualTags: string[];
 }
 

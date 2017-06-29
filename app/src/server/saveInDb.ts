@@ -16,8 +16,8 @@ function insertDocuments(db: Db, objToInsert: IFullMeta): void {
 
     objToInsert.fullDate = new Date(objToInsert.fullDate); // Convert into date which got stringyfied during the save/load
     collection.insert(objToInsert, (err: MongoError, result: InsertOneWriteOpResult) => {
-        console.log("Inserted " + result.insertedId);
-        console.log(result.result);
+        // console.log("Inserted " + result.insertedId);
+        // console.log(result.result);
     });
 }
 
@@ -33,5 +33,6 @@ MongoClient.connect(url, (errMongo: MongoError, db: Db) => {
             insertDocuments(db, dataFromMainFile);
         });
         db.close();
+        console.log("Done saving");
     });
 });
