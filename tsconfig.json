@@ -4,7 +4,8 @@
         "target": "es6",
         "noImplicitAny": false,
         "sourceMap": true,
-        "outDir": "./deploy/output",
-        "allowJs": true
+        "outDir": "./deploy/outputanalysis",
+        "allowJs": true,
+        "jsx":"react"
     }
 }

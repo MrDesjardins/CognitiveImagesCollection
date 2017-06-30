@@ -73,11 +73,21 @@ This will allow us to have the website to be backed up with a faster way to quer
 
 # Scan
 
+The scan consist of building the NodeJs code that will train, analyze images and stich all results to endup in MongoDb.
+
 1. npm run build
 2. npm run train
 3. npm run analyze
 4. npm run stitch
 5. npm run db
+
+# Website
+
+The website allows to query the trained and analyzed images that are at this point in the MongoDb. Here are the step to build and run the server.
+
+1. npm run buildweb
+2. npm run serverweb
+3. http://localhost:8080
 
 # High Level Tasks List
 
