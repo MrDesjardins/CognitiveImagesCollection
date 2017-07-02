@@ -1,7 +1,14 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-
-import { MainComponent } from "./main";
 import "./index.scss";
+import { createStore } from "redux";
+import App from "./components/presentationComponents/App";
+import { appReducer } from "./redux/reducers";
+import { Provider } from "react-redux";
 
-ReactDOM.render(<MainComponent name="Test"/>, document.getElementById("main"));
+const store = createStore(appReducer);
+ReactDOM.render(
+    <Provider store={store}>
+        <App />
+    </Provider>
+    , document.getElementById("main"));
