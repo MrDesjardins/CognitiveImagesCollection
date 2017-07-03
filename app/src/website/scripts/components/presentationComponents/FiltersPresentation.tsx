@@ -42,11 +42,11 @@ export class FiltersPresentation extends React.Component<IFiltersPresentationPro
                     <input
                         ref={(input) => { this.startDate = input; }}
                         type="date"
-                        value={this.props.filters.startingDate.toISOString()} />
+                        value={this.props.filters.startingDate.toISOString().substring(0, 10)} />
                     <input
                         ref={(input) => { this.endDate = input; }}
                         type="date"
-                        value={this.props.filters.endingDate.toISOString()} />
+                        value={this.props.filters.endingDate.toISOString().substring(0, 10)} />
                 </div>
                 <div className="col-md-12 col-sm-6 col-xs-12">
                     <h4>Number of people</h4>
@@ -72,6 +72,7 @@ export class FiltersPresentation extends React.Component<IFiltersPresentationPro
                         type="range"
                         min="0"
                         max="1"
+                        step="0.1"
                         value={this.props.filters.smileLevel} />
                     <h5>Hapiness</h5>
                     <input
@@ -79,6 +80,7 @@ export class FiltersPresentation extends React.Component<IFiltersPresentationPro
                         type="range"
                         min="0"
                         max="1"
+                        step="0.1"
                         value={this.props.filters.happinessLevel} />
                 </div>
 

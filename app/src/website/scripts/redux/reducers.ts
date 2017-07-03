@@ -12,9 +12,9 @@ const initialState = {
         isBlackAndWhite: false,
         startingDate: new Date(),
         endingDate: new Date(),
-        numberOfPeople: undefined,
-        smileLevel: undefined,
-        happinessLevel: undefined,
+        numberOfPeople: 100,
+        smileLevel: 0,
+        happinessLevel: 0,
         peopleName: []
     } as IFilters
     , results: {

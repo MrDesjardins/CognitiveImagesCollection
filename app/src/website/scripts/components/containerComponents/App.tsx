@@ -3,10 +3,9 @@ import { HeaderPanel } from "../presentationComponents/HeaderPanel";
 import { ResultPanel } from "../presentationComponents/ResultPanel";
 import { Provider, connect, Dispatch } from "react-redux";
 import { createStore } from "redux";
-import FiltersContainer from "../containerComponents/FiltersContainer";
 import { IAppState, IFilters, IResults } from "../../models/filterModels";
 import { updateFilter, filterChanged } from "../../redux/actionsCreator";
-import { FiltersPresentation } from "./FiltersPresentation";
+import { FiltersPresentation } from "../presentationComponents/FiltersPresentation";
 
 export interface IAppProps {
     model: IAppState;
