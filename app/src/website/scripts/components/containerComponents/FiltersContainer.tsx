@@ -1,5 +1,5 @@
 import { connect, Dispatch } from "react-redux";
-import { updateFilter } from "../../redux/actionsCreator";
+import { updateFilter, filterChanged } from "../../redux/actionsCreator";
 import { FiltersPresentation, IFiltersPresentationProps } from "../presentationComponents/FiltersPresentation";
 import { IFilters } from "../../models/filterModels";
 
@@ -11,8 +11,11 @@ const mapStateToProps = (state: IFilters): IFiltersPresentationProps => {
 
 const mapDispatchToProps = (dispatch: Dispatch<IFilters>) => {
     return {
-        onApply: (filters: IFilters) => {
-            dispatch(updateFilter(filters));
+        onApply: () => {
+            dispatch(updateFilter());
+        },
+        filterChange: (filters: IFilters) => {
+            dispatch(filterChanged(filters));
         }
     };
 };

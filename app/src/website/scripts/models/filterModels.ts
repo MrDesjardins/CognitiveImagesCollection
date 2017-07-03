@@ -1,5 +1,4 @@
 import { IFullMeta } from "../../../serveranalyzer/model";
-
 export interface IFilters {
     tags: string[];
     isBlackAndWhite: boolean;
@@ -8,7 +7,7 @@ export interface IFilters {
     numberOfPeople: number;
 
     smileLevel: number;
-    hapinessLevel: number;
+    happinessLevel: number;
     peopleName: string[];
 }
 

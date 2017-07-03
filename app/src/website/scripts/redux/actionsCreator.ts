@@ -1,6 +1,6 @@
 // Can be impure
 
-import { UPDATE_FILTER } from "./actions";
+import { FILTER_APPLIED, FILTER_CHANGED } from "./actions";
 import { IFilters, IResults } from "../models/filterModels";
 
 export interface IUpdateFilterActionCreator {
@@ -8,9 +8,21 @@ export interface IUpdateFilterActionCreator {
     filters: IFilters;
     results: IResults;
 }
-export function updateFilter(filters: IFilters): IUpdateFilterActionCreator {
+
+export interface IChangedFilterActionCreator {
+    type: string;
+    filterName: string;
+    value: any;
+}
+export function updateFilter(): IUpdateFilterActionCreator {
     return {
-        type: UPDATE_FILTER,
+        type: FILTER_APPLIED
+    } as IUpdateFilterActionCreator;
+}
+
+export function filterChanged(filters: IFilters): IUpdateFilterActionCreator {
+    return {
+        type: FILTER_CHANGED,
         filters: filters
     } as IUpdateFilterActionCreator;
 }

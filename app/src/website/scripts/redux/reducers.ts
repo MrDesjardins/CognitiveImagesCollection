@@ -2,19 +2,19 @@
 // Pure function
 // Always return a new object
 
-import { UPDATE_FILTER, RESET, SHOW_RESULT } from "./actions";
+import { FILTER_APPLIED, RESET, SHOW_RESULT, FILTER_CHANGED } from "./actions";
 import { IAppState, IResults, IFilters } from "../models/filterModels";
-import { IUpdateFilterActionCreator } from "./actionsCreator";
+import { IUpdateFilterActionCreator, IChangedFilterActionCreator } from "./actionsCreator";
 
 const initialState = {
     filters: {
         tags: [],
         isBlackAndWhite: false,
-        startingDate: undefined,
-        endingDate: undefined,
+        startingDate: new Date(),
+        endingDate: new Date(),
         numberOfPeople: undefined,
         smileLevel: undefined,
-        hapinessLevel: undefined,
+        happinessLevel: undefined,
         peopleName: []
     } as IFilters
     , results: {
@@ -26,10 +26,12 @@ export function appReducer(state: IAppState = initialState, action: IUpdateFilte
     switch (action.type) {
         case RESET:
             return initialState;
-        case UPDATE_FILTER:
+        case FILTER_CHANGED:
             return Object.assign({}, state, {
                 filters: action.filters
             }) as IAppState;
+        case FILTER_APPLIED:
+            return Object.assign({}, state) as IAppState;
         case SHOW_RESULT:
             return Object.assign({}, state, {
                 results: action.results
@@ -38,3 +40,13 @@ export function appReducer(state: IAppState = initialState, action: IUpdateFilte
             return state
     }
 }
+
+// export function appReducerFilterChange(state: IAppState = initialState, action: IChangedFilterActionCreator): IAppState {
+//     switch (action.type) {
+//         case FILTER_UPDATED:
+//             state[action.filterName] = action.value;
+//             return Object.assign({}, state) as IAppState;
+//         default:
+//             return state
+//     }
+// }

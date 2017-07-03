@@ -10,3 +10,4 @@ export class ResultPanel extends React.Component<ResultPanelProps, undefined> {
         return <div id="result-panel" className="col-md-9" > </div>;
     }
 }
+

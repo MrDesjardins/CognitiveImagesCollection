@@ -5,8 +5,15 @@ import { Provider, connect, Dispatch } from "react-redux";
 import { createStore } from "redux";
 import FiltersContainer from "../containerComponents/FiltersContainer";
 import { IAppState, IFilters, IResults } from "../../models/filterModels";
-import { updateFilter } from "../../redux/actionsCreator";
+import { updateFilter, filterChanged } from "../../redux/actionsCreator";
 import { FiltersPresentation } from "./FiltersPresentation";
+
+export interface IAppProps {
+    model: IAppState;
+    onApply: () => void;
+    filterChange: (filters: IFilters) => void;
+}
+
 
 const App = (props: IAppProps) => (<div>
     <HeaderPanel
@@ -15,7 +22,12 @@ const App = (props: IAppProps) => (<div>
         <div className="row">
             <FiltersPresentation
                 filters={props.model.filters}
-                onApply={() => { console.log("to do soon"); }} />
+                onApply={() => { console.log("to do soon"); }}
+                filterChange={(filters: IFilters) => {
+                    console.log("filter changed");
+                    props.filterChange(filters);
+                }}
+            />
             <ResultPanel
                 results={props.model.results}
             />
@@ -24,12 +36,19 @@ const App = (props: IAppProps) => (<div>
 </div>
 );
 
-interface IAppProps {
-    model: IAppState;
-}
 
 const mapStateToProps = (state: IAppState) => ({
     model: state,
 } as IAppProps);
 
-export default connect(mapStateToProps)(App);
+const mapDispatchToProps = (dispatch: Dispatch<IFilters>) => {
+    return {
+        onApply: () => {
+            dispatch(updateFilter());
+        },
+        filterChange: (filters: IFilters) => {
+            dispatch(filterChanged(filters));
+        }
+    };
+};
+export default connect(mapStateToProps, mapDispatchToProps)(App);
