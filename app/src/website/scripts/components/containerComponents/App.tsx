@@ -5,7 +5,7 @@ import { Provider, connect, Dispatch } from "react-redux";
 import { createStore } from "redux";
 import { IAppState, IFilters, IResults } from "../../models/filterModels";
 import { updateFilter, filterChanged } from "../../redux/actionsCreator";
-import { FiltersPresentation } from "../presentationComponents/FiltersPresentation";
+import { Filters } from "../presentationComponents/Filters";
 
 
 interface IAppDispatch {
@@ -23,7 +23,7 @@ const App = (props: IAppProps) => (<div>
     />
     <div className="container">
         <div className="row">
-            <FiltersPresentation
+            <Filters
                 filters={props.model.filters}
                 onApply={() => { console.log("to do soon"); }}
                 filterChange={(filters: IFilters) => {

@@ -1,14 +1,15 @@
 import * as React from "react";
 import { IFilters } from "../../models/filterModels";
 import { ChangeEventHandler, FormEvent, EventHandler } from "react";
-import { TagPresentation } from "./Tags";
+import { TagsFilter } from "./TagsFilter";
+import { ColorsFilter } from "./ColorFilter";
 export interface IFiltersPresentationProps {
     filters: IFilters;
     onApply: () => void;
     filterChange: (filters: IFilters) => void;
 }
 
-export class FiltersPresentation extends React.Component<IFiltersPresentationProps, undefined> {
+export class Filters extends React.Component<IFiltersPresentationProps, undefined> {
     private bw: HTMLInputElement;
     private startDate: HTMLInputElement;
     private endDate: HTMLInputElement;
@@ -25,17 +26,16 @@ export class FiltersPresentation extends React.Component<IFiltersPresentationPro
             <h3>Filters</h3>
             <div className="row">
                 <div className="col-md-12 col-sm-6 col-xs-12">
-                    <TagPresentation
+                    <TagsFilter
                         defaultValue={this.props.filters.tags.join(",")}
-                        onChange={(value: string) => { this.props.filterChange(this.getRefreshedState(value)); }}
+                        onChange={(value: string) => { this.props.filters.tags = value.split(","); this.refresh(); }}
                     />
                 </div>
                 <div className="col-md-12 col-sm-6 col-xs-12">
-                    <h4>Is BW?</h4>
-                    <input
-                        ref={(input) => { this.bw = input; }}
-                        type="checkbox"
-                        checked={this.props.filters.isBlackAndWhite} />
+                    <ColorsFilter
+                        isBlackWhite={this.props.filters.isBlackAndWhite}
+                        onChange={(value: boolean) => { this.props.filters.isBlackAndWhite = value; this.refresh(); }}
+                    />
                 </div>
                 <div className="col-md-12 col-sm-6 col-xs-12">
                     <h4>Dates</h4>
@@ -93,6 +93,9 @@ export class FiltersPresentation extends React.Component<IFiltersPresentationPro
         </div>
     }
 
+    private refresh(): void {
+        this.props.filterChange(this.props.filters);
+    }
     private getRefreshedState(tags: string): IFilters {
         const currentState = this.props.filters;
         currentState.isBlackAndWhite = this.bw.value === "0";
