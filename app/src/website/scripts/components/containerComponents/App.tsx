@@ -7,10 +7,14 @@ import { IAppState, IFilters, IResults } from "../../models/filterModels";
 import { updateFilter, filterChanged } from "../../redux/actionsCreator";
 import { FiltersPresentation } from "../presentationComponents/FiltersPresentation";
 
-export interface IAppProps {
-    model: IAppState;
+
+interface IAppDispatch {
     onApply: () => void;
     filterChange: (filters: IFilters) => void;
+}
+export interface IAppProps extends IAppDispatch {
+    model: IAppState;
+
 }
 
 
@@ -36,11 +40,13 @@ const App = (props: IAppProps) => (<div>
 );
 
 
-const mapStateToProps = (state: IAppState) => ({
-    model: state,
-} as IAppProps);
+const mapStateToProps = (state: IAppState) => {
+    return {
+        model: state,
+    } as IAppProps
+};
 
-const mapDispatchToProps = (dispatch: Dispatch<IFilters>) => {
+const mapDispatchToProps = (dispatch: Dispatch<IAppState>): IAppDispatch => {
     return {
         onApply: () => {
             dispatch(updateFilter());
@@ -48,6 +54,6 @@ const mapDispatchToProps = (dispatch: Dispatch<IFilters>) => {
         filterChange: (filters: IFilters) => {
             dispatch(filterChanged(filters));
         }
-    };
+    } as IAppDispatch;
 };
 export default connect(mapStateToProps, mapDispatchToProps)(App);
