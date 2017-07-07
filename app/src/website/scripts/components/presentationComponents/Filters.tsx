@@ -3,6 +3,11 @@ import { IFilters } from "../../models/filterModels";
 import { ChangeEventHandler, FormEvent, EventHandler } from "react";
 import { TagsFilter } from "./TagsFilter";
 import { ColorsFilter } from "./ColorFilter";
+import { DateRangeFilter } from "./DateRangeFilter";
+import { NumberPeopleFilter } from "./NumberPeopleFilter";
+import { NameFilter } from "./NameFilter";
+import { SmileFilter } from "./SmileFilter";
+import { HapinessFilter } from "./HapinessLevel";
 export interface IFiltersPresentationProps {
     filters: IFilters;
     onApply: () => void;
@@ -10,9 +15,6 @@ export interface IFiltersPresentationProps {
 }
 
 export class Filters extends React.Component<IFiltersPresentationProps, undefined> {
-    private bw: HTMLInputElement;
-    private startDate: HTMLInputElement;
-    private endDate: HTMLInputElement;
     private numberOfPeople: HTMLInputElement;
     private peopleName: HTMLInputElement;
     private smileRange: HTMLInputElement;
@@ -27,8 +29,8 @@ export class Filters extends React.Component<IFiltersPresentationProps, undefine
             <div className="row">
                 <div className="col-md-12 col-sm-6 col-xs-12">
                     <TagsFilter
-                        defaultValue={this.props.filters.tags.join(",")}
-                        onChange={(value: string) => { this.props.filters.tags = value.split(","); this.refresh(); }}
+                        defaultValue={this.props.filters.tags}
+                        onChange={(value: string[]) => { this.props.filters.tags = value; this.refresh(); }}
                     />
                 </div>
                 <div className="col-md-12 col-sm-6 col-xs-12">
@@ -38,50 +40,34 @@ export class Filters extends React.Component<IFiltersPresentationProps, undefine
                     />
                 </div>
                 <div className="col-md-12 col-sm-6 col-xs-12">
-                    <h4>Dates</h4>
-                    <input
-                        ref={(input) => { this.startDate = input; }}
-                        type="date"
-                        value={this.props.filters.startingDate.toISOString().substring(0, 10)} />
-                    <input
-                        ref={(input) => { this.endDate = input; }}
-                        type="date"
-                        value={this.props.filters.endingDate.toISOString().substring(0, 10)} />
+                    <DateRangeFilter
+                        date1={this.props.filters.startingDate}
+                        date2={this.props.filters.endingDate}
+                        onChange={(v1: Date, v2: Date) => { this.props.filters.startingDate = v1; this.props.filters.endingDate = v2; this.refresh(); }}
+                    />
                 </div>
                 <div className="col-md-12 col-sm-6 col-xs-12">
-                    <h4>Number of people</h4>
-                    <input
-                        ref={(input) => { this.numberOfPeople = input; }}
-                        type="number"
-                        value={this.props.filters.numberOfPeople} />
+                    <NumberPeopleFilter
+                        numberOfPeople={this.props.filters.numberOfPeople}
+                        onChange={(numberPeople: number) => { this.props.filters.numberOfPeople = numberPeople; this.refresh(); }}
+                    />
                 </div>
-
                 <div className="col-md-12 col-sm-6 col-xs-12">
-                    <h4>Name</h4>
-                    <input
-                        ref={(input) => { this.peopleName = input; }}
-                        type="text"
-                        value={this.props.filters.peopleName.join(",")} />
+                    <NameFilter
+                        names={this.props.filters.peopleName}
+                        onChange={(names: string[]) => { this.props.filters.peopleName = names; this.refresh(); }}
+                    />
                 </div>
-
                 <div className="col-md-12 col-sm-6 col-xs-12">
                     <h4>Emotion</h4>
-                    <h5>Smile</h5>
-                    <input
-                        ref={(input) => { this.smileRange = input; }}
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value={this.props.filters.smileLevel} />
-                    <h5>Hapiness</h5>
-                    <input
-                        ref={(input) => { this.hapinessRange = input; }}
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value={this.props.filters.happinessLevel} />
+                    <SmileFilter
+                        value={this.props.filters.smileLevel}
+                        onChange={(smileLevel: number) => { this.props.filters.smileLevel = smileLevel; this.refresh(); }}
+                    />
+                    <HapinessFilter
+                        value={this.props.filters.happinessLevel}
+                        onChange={(hapinessLevel: number) => { this.props.filters.happinessLevel = hapinessLevel; this.refresh(); }}
+                    />
                 </div>
 
                 <div className="row">
@@ -95,17 +81,5 @@ export class Filters extends React.Component<IFiltersPresentationProps, undefine
 
     private refresh(): void {
         this.props.filterChange(this.props.filters);
-    }
-    private getRefreshedState(tags: string): IFilters {
-        const currentState = this.props.filters;
-        currentState.isBlackAndWhite = this.bw.value === "0";
-        currentState.tags = tags.split(",");
-        currentState.startingDate = new Date(this.startDate.value);
-        currentState.endingDate = new Date(this.endDate.value);
-        currentState.numberOfPeople = parseInt(this.numberOfPeople.value, 10);
-        currentState.peopleName = this.peopleName.value.split(",");
-        currentState.smileLevel = parseInt(this.smileRange.value, 10);
-        currentState.happinessLevel = parseInt(this.hapinessRange.value, 10);
-        return currentState;
     }
 }

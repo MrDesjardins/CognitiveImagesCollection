@@ -40,6 +40,7 @@
     "@types/react-dom": "^15.5.1",
     "@types/react-hot-loader": "3.0.2",
     "@types/react-redux": "^4.4.45",
+    "@types/redux": "^3.6.0",
     "@types/request": "0.0.44",
     "@types/sharp": "^0.17.2",
     "@types/stream-buffers": "^3.0.2",
