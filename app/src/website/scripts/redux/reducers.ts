@@ -2,7 +2,7 @@
 // Pure function
 // Always return a new object
 
-import { FILTER_APPLIED, RESET, SHOW_RESULT, FILTER_CHANGED } from "./actions";
+import { FILTER_APPLIED_REQUEST, RESET, FILTER_CHANGED, FILTER_APPLIED_RESPONSE } from "./actions";
 import { IAppState, IResults, IFilters } from "../models/filterModels";
 import { IUpdateFilterActionCreator, IChangedFilterActionCreator } from "./actionsCreator";
 
@@ -30,12 +30,13 @@ export function appReducer(state: IAppState = initialState, action: IUpdateFilte
             return Object.assign({}, state, {
                 filters: action.filters
             }) as IAppState;
-        case FILTER_APPLIED:
+        case FILTER_APPLIED_REQUEST:
             return Object.assign({}, state) as IAppState;
-        case SHOW_RESULT:
-            return Object.assign({}, state, {
-                results: action.results
-            }) as IAppState;
+        case FILTER_APPLIED_RESPONSE:
+            // const newResults = Object.assign({}, state.results) as IResults;
+            // state.results = newResults;
+            // return state;
+            return Object.assign({}, state) as IAppState;
         default:
             return state
     }

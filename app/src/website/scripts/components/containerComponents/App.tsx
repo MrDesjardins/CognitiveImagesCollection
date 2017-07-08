@@ -4,7 +4,7 @@ import { ResultPanel } from "../presentationComponents/ResultPanel";
 import { Provider, connect, Dispatch } from "react-redux";
 import { createStore } from "redux";
 import { IAppState, IFilters, IResults } from "../../models/filterModels";
-import { updateFilter, filterChanged } from "../../redux/actionsCreator";
+import { applyFilter, filterChanged } from "../../redux/actionsCreator";
 import { Filters } from "../presentationComponents/Filters";
 
 
@@ -25,9 +25,8 @@ const App = (props: IAppProps) => (<div>
         <div className="row">
             <Filters
                 filters={props.model.filters}
-                onApply={() => { console.log("to do soon"); }}
+                onApply={() => { props.onApply(); }}
                 filterChange={(filters: IFilters) => {
-                    console.log("filter changed");
                     props.filterChange(filters);
                 }}
             />
@@ -49,7 +48,7 @@ const mapStateToProps = (state: IAppState) => {
 const mapDispatchToProps = (dispatch: Dispatch<IAppState>): IAppDispatch => {
     return {
         onApply: () => {
-            dispatch(updateFilter());
+            dispatch(applyFilter());
         },
         filterChange: (filters: IFilters) => {
             dispatch(filterChanged(filters));
