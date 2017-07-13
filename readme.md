@@ -102,3 +102,11 @@ The website allows to query the trained and analyzed images that are at this poi
 9. Create website to query data
 10. Display result
 11. Remove hard-coded value from secret.js and use the [Person - List Persons in a Person Group](https://westus.dev.cognitive.microsoft.com/docs/services/563879b61984550e40cbbe8d/operations/563879b61984550f30395241/console) API to create the map between GUID and display name.
+
+# Articles Based on this Repository
+
+
+- [TypeScript, React and Redux](http://patrickdesjardins.com/blog/typescript-react-and-redux-part-1-the-big-picture)
+- [TypeScript and Redux Store](http://patrickdesjardins.com/blog/typescript-react-and-redux-part-2-creating-the-store-and-the-reducer)
+- [TypeScript Redux Store Binding](http://patrickdesjardins.com/blog/typescript-react-and-redux-part-3-binding-the-store-and-component)
+- [TypeScript Redux Action Creators](http://patrickdesjardins.com/blog/typescript-react-and-redux-part-4-multiple-returns-from-action-creator)
