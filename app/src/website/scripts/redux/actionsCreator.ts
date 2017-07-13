@@ -1,39 +1,22 @@
 // Can be impure
 
-import { FILTER_APPLIED_REQUEST, FILTER_CHANGED, FILTER_APPLIED_RESPONSE } from "./actions";
-import { IFilters, IResults } from "../models/filterModels";
+import { IUpdateFilterAction, actionApplyRequest, actionApplyResponse, actionFilterChanged } from "./actions";
+import { IFilters, IResults, IAppState } from "../models/filterModels";
 import { ThunkAction } from "redux-thunk";
 import { Dispatch } from "redux";
-export interface IUpdateFilterActionCreator {
-    type: string;
-    filters: IFilters;
-    results: IResults;
-}
 
-export interface IChangedFilterActionCreator {
-    type: string;
-    filterName: string;
-    value: any;
-}
-export function applyFilter(): Dispatch<IUpdateFilterActionCreator> {
-    return (dispatch: Dispatch<IUpdateFilterActionCreator>) => {
-        dispatch({
-            type: FILTER_APPLIED_REQUEST
-        } as IUpdateFilterActionCreator);
-
+export function applyFilter(): ThunkAction<void, IAppState, void> {
+    return (dispatch: Dispatch<IUpdateFilterAction>, getState: () => IAppState, extra: any) => {
+        // return null;
         setTimeout(() => {
-            const fakePayload = {} as IResults;
-            dispatch({
-                type: FILTER_APPLIED_RESPONSE,
-                results: fakePayload
-            } as IUpdateFilterActionCreator);
+            const fakePayload = {} as IResults; // Simulate date from response through Ajax response
+            dispatch(actionApplyResponse(fakePayload));
         }, 1500);
+
+        return dispatch(actionApplyRequest());
     };
 }
 
-export function filterChanged(filters: IFilters): IUpdateFilterActionCreator {
-    return {
-        type: FILTER_CHANGED,
-        filters: filters
-    } as IUpdateFilterActionCreator;
+export function filterChanged(filters: IFilters): IUpdateFilterAction {
+    return actionFilterChanged(filters);
 }

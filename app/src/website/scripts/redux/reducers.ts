@@ -2,9 +2,8 @@
 // Pure function
 // Always return a new object
 
-import { FILTER_APPLIED_REQUEST, RESET, FILTER_CHANGED, FILTER_APPLIED_RESPONSE } from "./actions";
+import { IUpdateFilterAction, IChangedFilterAction, FILTER_APPLIED_REQUEST, RESET, FILTER_CHANGED, FILTER_APPLIED_RESPONSE } from "./actions";
 import { IAppState, IResults, IFilters } from "../models/filterModels";
-import { IUpdateFilterActionCreator, IChangedFilterActionCreator } from "./actionsCreator";
 
 const initialState = {
     filters: {
@@ -22,17 +21,21 @@ const initialState = {
     } as IResults
 } as IAppState;
 
-export function appReducer(state: IAppState = initialState, action: IUpdateFilterActionCreator): IAppState {
+export function appReducer(state: IAppState = initialState, action: IUpdateFilterAction): IAppState {
     switch (action.type) {
         case RESET:
+            console.log("appReducer > RESET");
             return initialState;
         case FILTER_CHANGED:
+            console.log("appReducer > FILTER_CHANGED");
             return Object.assign({}, state, {
                 filters: action.filters
             }) as IAppState;
         case FILTER_APPLIED_REQUEST:
+            console.log("appReducer > FILTER_APPLIED_REQUEST");
             return Object.assign({}, state) as IAppState;
         case FILTER_APPLIED_RESPONSE:
+            console.log("appReducer > FILTER_APPLIED_RESPONSE");
             // const newResults = Object.assign({}, state.results) as IResults;
             // state.results = newResults;
             // return state;
