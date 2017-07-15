@@ -4,14 +4,17 @@ import { IUpdateFilterAction, actionApplyRequest, actionApplyResponse, actionFil
 import { IFilters, IResults, IAppState } from "../models/filterModels";
 import { ThunkAction } from "redux-thunk";
 import { Dispatch } from "redux";
+import { ImageDataProvider } from "../dataproviders/imageDataProviders";
 
 export function applyFilter(): ThunkAction<void, IAppState, void> {
     return (dispatch: Dispatch<IUpdateFilterAction>, getState: () => IAppState, extra: any) => {
-        // return null;
-        setTimeout(() => {
-            const fakePayload = {} as IResults; // Simulate date from response through Ajax response
-            dispatch(actionApplyResponse(fakePayload));
-        }, 1500);
+
+        const provider = new ImageDataProvider();
+        const filters = getState().filters;
+        provider.getBeersListWithFilter(filters).then((result: IResults) => {
+            console.log("Action Creator Result : " + result);
+            dispatch(actionApplyResponse(result));
+        });
 
         return dispatch(actionApplyRequest());
     };
