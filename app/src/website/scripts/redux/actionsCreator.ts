@@ -11,7 +11,7 @@ export function applyFilter(): ThunkAction<void, IAppState, void> {
 
         const provider = new ImageDataProvider();
         const filters = getState().filters;
-        provider.getBeersListWithFilter(filters).then((result: IResults) => {
+        provider.getPicturesWithFilter(filters).then((result: IResults) => {
             console.log("Action Creator Result : " + result);
             dispatch(actionApplyResponse(result));
         });

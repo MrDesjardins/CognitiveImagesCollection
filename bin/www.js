@@ -11,6 +11,8 @@ app.get('/api', function (req, res) {
     console.log("Url : " + req.url);
     console.log("Parameters : " + parameters);
 
+    // Query MongoDb
+
     const results = {
         pictureResults : [
             {
@@ -20,6 +22,10 @@ app.get('/api', function (req, res) {
             }
         ]
     } ;
+
+    // Fix cors issue
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 
     res.json({ key: "value" });
     // res.json(JSON.parse(body));

@@ -7,10 +7,7 @@ import { IFilters, IResults, IResult } from "../models/filterModels";
  */
 export class ImageDataProvider {
 
-    public readonly URL_BEERS: string = "http://localhost:8080/api";
-
-    private promiseBeers: Promise<IResults>;
-
+    public readonly URL_PICTURES_API: string = "http://localhost:8080/api";
 
     private doRequest<T>(url: string, dataUrl: string, sucessCallback: (response) => T): Promise<T> {
         const that = this;
@@ -57,12 +54,12 @@ export class ImageDataProvider {
         return params;
     }
 
-    public getBeersListWithFilter(filter: IFilters, queueRequest: boolean = true, pageNumber?: number): Promise<IResults> {
+    public getPicturesWithFilter(filter: IFilters, queueRequest: boolean = true, pageNumber?: number): Promise<IResults> {
         const params: string = this.getParamsWithValues(pageNumber, filter);
-        return this.getBeers(this.URL_BEERS, params);
+        return this.getPictures(this.URL_PICTURES_API, params);
     }
 
-    protected getBeers(url: string, dataUrl: string): Promise<IResults> {
+    protected getPictures(url: string, dataUrl: string): Promise<IResults> {
         const promise = this.doRequest<IResults>(url, dataUrl, (jsonObjectResponse: string) => Object.assign({} as IResults, jsonObjectResponse));
         return promise;
     }
