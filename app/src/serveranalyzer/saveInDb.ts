@@ -1,18 +1,19 @@
 import { MongoClient, MongoError, Db, InsertOneWriteOpResult } from "mongodb";
 import { localDirectory } from "../../../secret";
+import { mongodbConnectionString, mongodbCollectionName } from "../../../config";
 import * as g from "glob";
 import * as path from "path";
 import * as fs from "fs";
 import { IFullMeta } from "./model";
 
 // ============== Configuration Constants =============
-const url = "mongodb://localhost:27017/cognitiveimagescollection";
+const url = mongodbConnectionString;
 const directoryName = "metainfo";
 const imagesDirectory = localDirectory;
 const pathImagesDirectory = path.join(imagesDirectory, "**/" + directoryName + "/*_fullmeta.json");
 
 function insertDocuments(db: Db, objToInsert: IFullMeta): void {
-    const collection = db.collection("documents");
+    const collection = db.collection(mongodbCollectionName);
 
     objToInsert.fullDate = new Date(objToInsert.fullDate); // Convert into date which got stringyfied during the save/load
     collection.insert(objToInsert, (err: MongoError, result: InsertOneWriteOpResult) => {

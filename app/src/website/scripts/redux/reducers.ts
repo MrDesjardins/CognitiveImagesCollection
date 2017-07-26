@@ -14,7 +14,7 @@ const initialState = {
         numberOfPeople: 100,
         smileLevel: 0,
         happinessLevel: 0,
-        peopleName: []
+        peopleNames: []
     } as IFilters
     , results: {
         pictureResults: []

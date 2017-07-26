@@ -86,8 +86,9 @@ The scan consist of building the NodeJs code that will train, analyze images and
 The website allows to query the trained and analyzed images that are at this point in the MongoDb. Here are the step to build and run the server.
 
 1. npm run buildweb
-2. npm run serverweb
-3. http://localhost:8080
+2. npm run buildwww
+3. npm run webserver
+4. http://localhost:8080
 
 # High Level Tasks List
 
@@ -99,12 +100,11 @@ The website allows to query the trained and analyzed images that are at this poi
 6. ~~Request Face Api to get emotion and to tag people name (create a second JSON file)~~
 7. ~~Enhance result with local information (folder directory has name and full date)~~
 8. ~~Store information~~
-9. Create website to query data
+9. ~~Create website to query data~~
 10. Display result
 11. Remove hard-coded value from secret.js and use the [Person - List Persons in a Person Group](https://westus.dev.cognitive.microsoft.com/docs/services/563879b61984550e40cbbe8d/operations/563879b61984550f30395241/console) API to create the map between GUID and display name.
 
 # Articles Based on this Repository
-
 
 - [TypeScript, React and Redux](http://patrickdesjardins.com/blog/typescript-react-and-redux-part-1-the-big-picture)
 - [TypeScript and Redux Store](http://patrickdesjardins.com/blog/typescript-react-and-redux-part-2-creating-the-store-and-the-reducer)

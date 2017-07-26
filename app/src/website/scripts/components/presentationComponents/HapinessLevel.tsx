@@ -19,7 +19,7 @@ export class HapinessFilter extends React.Component<IHapinessFilterProps, undefi
                 type="range"
                 min="0"
                 max="1"
-                step="0.1"
+                step="0.05"
                 value={this.props.value}
                 onChange={this.onChange}
             />

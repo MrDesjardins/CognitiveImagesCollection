@@ -20,7 +20,8 @@
     "copyweb": "copyfiles -u 1 ./app/src/website/index.html ./deploy/outputweb/",
     "packageweb": "./node_modules/.bin/webpack --config webpack.config.js --display-error-details",
     "buildweb": "npm run clean & SET NODE_ENV=development & npm run packageweb & npm run copyweb",
-    "webserver": "node bin/www.js"
+    "webserver": "node deploy/outputweb/src/website/www.js",
+    "buildwww" : "tsc -p tsconfig.www.json"
   },
   "keywords": [
     "analyze",

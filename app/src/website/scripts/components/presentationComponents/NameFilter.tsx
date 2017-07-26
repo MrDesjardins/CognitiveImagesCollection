@@ -17,7 +17,7 @@ export class NameFilter extends React.Component<INameFilterProps, undefined> {
             <h4>Names</h4>
             <input
                 type="text"
-                value={this.props.names.join(",")} 
+                value={this.props.names.join(",")}
                 onChange={this.onChange}
                 />
         </div>

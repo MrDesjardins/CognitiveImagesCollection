@@ -8,7 +8,7 @@ export interface IFilters {
 
     smileLevel: number;
     happinessLevel: number;
-    peopleName: string[];
+    peopleNames: string[];
 }
 
 export interface IResults {

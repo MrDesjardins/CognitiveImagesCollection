@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es6",
+        "noImplicitAny": false,
+        "sourceMap": false,
+        "outDir": "./deploy/outputweb/src/website",
+        "allowJs": true
+    },
+    "files": [
+        "www.ts"
+    ]
+}

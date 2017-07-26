@@ -44,8 +44,8 @@ export class ImageDataProvider {
             params = params + "&startdate=" + filters.startingDate.valueOf();
             params = params + "&enddate=" + filters.endingDate.valueOf();
 
-            if (filters.peopleName && filters.peopleName.length > 0) {
-                params = params + "&names=" + filters.peopleName.join(",");
+            if (filters.peopleNames && filters.peopleNames.length > 0) {
+                params = params + "&names=" + filters.peopleNames.join(",");
             }
 
             // params = params + "&order=" + filters.sortFieldName;

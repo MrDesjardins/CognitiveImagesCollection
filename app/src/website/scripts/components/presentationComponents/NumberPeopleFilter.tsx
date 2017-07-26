@@ -25,6 +25,11 @@ export class NumberPeopleFilter extends React.Component<INumberPeopleFilterProps
     }
 
     public onChange(event: any): void {
-        this.props.onChange(parseInt(event.target.value, 10));
+        const value = parseInt(event.target.value, 10);
+        if (isNaN(value)) {
+            this.props.onChange(0);
+        } else {
+            this.props.onChange(parseInt(event.target.value, 10));
+        }
     }
 }

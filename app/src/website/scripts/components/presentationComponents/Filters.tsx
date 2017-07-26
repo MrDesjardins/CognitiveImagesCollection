@@ -54,8 +54,8 @@ export class Filters extends React.Component<IFiltersPresentationProps, undefine
                 </div>
                 <div className="col-md-12 col-sm-6 col-xs-12">
                     <NameFilter
-                        names={this.props.filters.peopleName}
-                        onChange={(names: string[]) => { this.props.filters.peopleName = names; this.refresh(); }}
+                        names={this.props.filters.peopleNames}
+                        onChange={(names: string[]) => { this.props.filters.peopleNames = names; this.refresh(); }}
                     />
                 </div>
                 <div className="col-md-12 col-sm-6 col-xs-12">

@@ -203,3 +203,84 @@
 //         ]
 //     }
 // );
+
+// ------ With tags back on
+db
+.getCollection("documents")
+.find(
+    { 
+        $and: [
+            {
+            $or: [
+                {
+                    $and:[
+                        {
+                            "tags.name":/bed/, 
+                            "tags.confidence":{ $gt: 0.9}
+                        },
+                         {
+                            "tags.name":/indoor/, 
+                            "tags.confidence":{ $gt: 0.9}
+                        }
+                    ]
+                },
+                {
+                    $and: 
+                    [ 
+                        { 
+                            "description.captions.text":/bed/, 
+                            "description.captions.confidence":{ $gt: 0.9}
+                        },
+                        { 
+                            "description.captions.text":/indoor/, 
+                            "description.captions.confidence":{ $gt: 0.9}
+                        }
+                    ]
+                },
+                {
+                    $and: 
+                    [ 
+                        {"manualTags": /bed/},
+                        {"manualTags": /indoor/},
+                    ]
+                },
+                {
+                    $or: 
+                    [ 
+                        {"description.captions.text": /bed/},
+                        {"description.captions.text": /indoor/},
+                    ]
+                }
+            ]
+        },
+        {
+            "color.isBWImg" : true
+        },
+        {
+            "fullDate":{
+                $gte: ISODate("2015-04-29T00:00:00.000Z"),
+                $lt: ISODate("2017-05-01T00:00:00.000Z")
+            }
+        },
+        {
+             $and: [
+                {
+                    "faces.0":{$exists: true}
+                },
+                {
+                    "faces":{$exists: true}
+                },
+            ]
+        },
+        {
+            "people.displayName": /Alicia/
+        },
+        {
+            "people.faceAttributes.smile": { $gt: 0.0}
+        },
+        {
+            "people.faceAttributes.emotion.happiness": { $gt: 0.0}
+        }
+        ]
+    }
+);
